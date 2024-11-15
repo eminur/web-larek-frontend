@@ -68,7 +68,7 @@ yarn build
 3. Класс OrderInfo
 
 Хранит условия оплаты заказа
-Поля PaymentMethod , address
+Поля payment, address
 
 4. Класс OrderContact 
 

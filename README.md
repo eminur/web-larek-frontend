@@ -67,13 +67,13 @@ yarn build
 
 3. Класс OrderInfo
 
-Хранит условия оплаты заказа
-Поля payment, address
+Хранит условия оплаты заказа.
+Поля payment, address.
 
 4. Класс OrderContact 
 
-Хранит контактные данные заказа
-Поля email, phone
+Хранит контактные данные заказа.
+Поля email, phone.
 
 5. Класс OrderModel
 

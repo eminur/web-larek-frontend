@@ -10,7 +10,7 @@ import { Success } from './components/Success';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { Modal } from './components/Modal';
 import {
-	ProductListModel,
+	CatalogModel,
 	BasketModel,
 	OrderModel,
 } from './components/WebLarekModel';
@@ -46,7 +46,7 @@ const contactTemplate = document.querySelector(
 ) as HTMLTemplateElement;
 
 // Модели данных
-const productListModel = new ProductListModel(events);
+const catalogModel = new CatalogModel(events);
 const basketModel = new BasketModel(events);
 const orderModel = new OrderModel(events);
 
@@ -67,14 +67,13 @@ const success = new Success(cloneTemplate(successTemplate), events);
 api
 	.getProductList()
 	.then((data) => {
-		productListModel.setItems(data);
-		console.log(productListModel);
+		catalogModel.setItems(data);
 	})
 	.catch((err) => console.log(err));
 
 // Изменились элементы списка товаров
 events.on('items:change', () => {
-	const itemsHTMLArray = productListModel
+	const itemsHTMLArray = catalogModel
 		.getItems()
 		.map((item) =>
 			new CardCatalog(cloneTemplate(cardCatalogTemplate), events).render(item)
@@ -88,7 +87,7 @@ events.on('items:change', () => {
 // Выбран товар из списка
 events.on('item:select', ({ id }: { id: ProductId }) => {
 	modal.render({
-		content: cardPreview.render(productListModel.getItem(id)),
+		content: cardPreview.render(catalogModel.getItem(id)),
 	});
 });
 
@@ -113,14 +112,14 @@ events.on('basket:open', () => {
 				events
 			);
 			cardBasket.index = indx + 1;
-			return cardBasket.render(productListModel.getItem(id));
+			return cardBasket.render(catalogModel.getItem(id));
 		}
 	);
 
 	modal.render({
 		content: basket.render({
 			basketItems: itemsHTMLArray,
-			totalPrice: productListModel.getTotalPrice(
+			totalPrice: catalogModel.getTotalPrice(
 				Array.from(basketModel.items.keys())
 			),
 		}),
@@ -141,7 +140,7 @@ events.on('basket:order', () => {
 	modal.render({ content: formOrderInfo.render() });
 });
 
-//Изменились поля условии оплаты заказа
+//Изменились поля условии оплаты и адреса заказа
 events.on(
 	'orderInfo:change',
 	(orderInfo: Partial<IOrderInfo> & { errors: string[] }) => {
@@ -180,7 +179,7 @@ events.on('formOrderContact:submit', () => {
 		.postOrder({
 			...orderModel.getOrderInfo(),
 			...orderModel.getOrderContact(),
-			total: productListModel.getTotalPrice(
+			total: catalogModel.getTotalPrice(
 				Array.from(basketModel.items.keys())
 			),
 			items: Array.from(basketModel.items.keys()),
@@ -192,7 +191,7 @@ events.on('formOrderContact:submit', () => {
 				modal.close();
 				modal.render({
 					content: success.render({
-						totalPrice: productListModel.getTotalPrice(
+						totalPrice: catalogModel.getTotalPrice(
 							Array.from(basketModel.items.keys())
 						),
 					}),

@@ -50,13 +50,13 @@ export class BasketModel implements IBasket {
 	}
 }
 
-interface IProductList {
+interface ICatalog {
 	items: IProductItem[];
 	setItems(items: IProductItem[]): void;
 	getItem(id: ProductId): IProductItem;
 }
 
-export class ProductListModel implements IProductList {
+export class CatalogModel implements ICatalog {
 	items: IProductItem[] = [];
 
 	constructor(protected events: IEvents) {}
@@ -96,13 +96,10 @@ class OrderContact implements IOrderContact {
 export class OrderModel {
 	protected _errors: string[];
 
-	orderInfo: OrderInfo;
-	orderContact: OrderContact;
+	orderInfo: OrderInfo = new OrderInfo();
+	orderContact: OrderContact = new OrderContact();
 
-	constructor(protected events: IEvents) {
-		this.orderInfo = new OrderInfo();
-		this.orderContact = new OrderContact();
-	}
+	constructor(protected events: IEvents) {}
 
 	setOrderInfo(value: Partial<IOrderInfo>): void {
 		this._errors = [];

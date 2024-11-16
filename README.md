@@ -243,8 +243,7 @@ basketItems: HTMLElement\[\];// массив карточек выбранных
 ```Typescript
 interface IFormOrderInfo {
 
-  orderInfo: IOrderInfo; //объект с данными условии оплаты и адреса
-доставки
+  orderInfo: IOrderInfo; //объект с данными условии оплаты и адреса доставки
 
   errors: string\[\]; // тексты ошибок валидации
 

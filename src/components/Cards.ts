@@ -83,6 +83,10 @@ export class CardPreview extends CardImage {
 			this.events.emit('item:addbasket', { id: this._itemId })
 		);
 	}
+
+	set addButtonDisabled(value: boolean){
+		this.setDisabled(this._button,value);
+	}
 }
 
 export class CardBasket extends Card {

@@ -9,11 +9,9 @@ import { FormOrderInfo, FormOrderContact } from './components/Forms';
 import { Success } from './components/Success';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { Modal } from './components/Modal';
-import {
-	CatalogModel,
-	BasketModel,
-	OrderModel,
-} from './components/WebLarekModel';
+import { CatalogModel } from './components/CatalogModel';
+import { BasketModel } from './components/BasketModel';
+import { OrderModel } from './components/OrderModel';
 import { CardCatalog, CardPreview, CardBasket } from './components/Cards';
 import { IOrderInfo, ProductId, IOrderContact } from './types';
 
@@ -86,6 +84,11 @@ events.on('items:change', () => {
 
 // Выбран товар из списка
 events.on('item:select', ({ id }: { id: ProductId }) => {
+	if (basketModel.items.has(id) || !catalogModel.getItem(id).price) {
+		cardPreview.addButtonDisabled = true;
+	} else {
+		cardPreview.addButtonDisabled = false;
+	}
 	modal.render({
 		content: cardPreview.render(catalogModel.getItem(id)),
 	});
@@ -100,42 +103,36 @@ events.on('item:addbasket', ({ id }: { id: ProductId }) => {
 //Удален товар из корзины
 events.on('item:deletebasket', ({ id }: { id: ProductId }) => {
 	basketModel.remove(id);
-	events.emit('basket:open');
 });
 
 //Открытие корзины
 events.on('basket:open', () => {
-	const itemsHTMLArray = Array.from(basketModel.items.keys()).map(
-		(id, indx) => {
-			const cardBasket = new CardBasket(
-				cloneTemplate(cardBasketTemplate),
-				events
-			);
-			cardBasket.index = indx + 1;
-			return cardBasket.render(catalogModel.getItem(id));
-		}
-	);
-
-	modal.render({
-		content: basket.render({
-			basketItems: itemsHTMLArray,
-			totalPrice: catalogModel.getTotalPrice(
-				Array.from(basketModel.items.keys())
-			),
-		}),
-	});
+	modal.render({ content: basket.render() });
 });
 
 //Изменилось содержимое корзины
 events.on('basket:change', ({ items }: { items: ProductId[] }) => {
-	page.render({
-		counter: basketModel.getTotal(),
+	const itemsHTMLArray = items.map((id, indx) => {
+		const cardBasket = new CardBasket(
+			cloneTemplate(cardBasketTemplate),
+			events
+		);
+		cardBasket.index = indx + 1;
+		return cardBasket.render(catalogModel.getItem(id));
 	});
+
+	basketModel.totalPrice = catalogModel.getTotalPrice(items);
+
+	basket.render({
+		basketItems: itemsHTMLArray,
+		totalPrice: basketModel.totalPrice,
+	});
+
+	page.render({ counter: basketModel.getTotal() });
 });
 
 // Оформления покупки, открытие формы для заполнения условии оплаты заказа
 events.on('basket:order', () => {
-	modal.close();
 	orderModel.setOrderInfo({ payment: null, address: '' });
 	modal.render({ content: formOrderInfo.render() });
 });
@@ -155,7 +152,6 @@ events.on('formOrderInfo:change', (orderInfo: Partial<IOrderInfo>) => {
 
 //Заверщение заполнения формы условии оплаты заказа
 events.on('formOrderInfo:submit', () => {
-	modal.close();
 	orderModel.setOrderContact({ email: '', phone: '' });
 	modal.render({ content: formOrderContact.render() });
 });
@@ -179,16 +175,14 @@ events.on('formOrderContact:submit', () => {
 		.postOrder({
 			...orderModel.getOrderInfo(),
 			...orderModel.getOrderContact(),
-			total: catalogModel.getTotalPrice(
-				Array.from(basketModel.items.keys())
-			),
+			total: basketModel.totalPrice,
 			items: Array.from(basketModel.items.keys()),
 		})
 		.then((data) => {
 			if ('error' in data) {
 				alert(data.error);
 			} else {
-				modal.close();
+				basketModel.clear();
 				modal.render({
 					content: success.render({
 						totalPrice: catalogModel.getTotalPrice(
@@ -204,7 +198,6 @@ events.on('formOrderContact:submit', () => {
 //Заказ отправлен на сервер, очищаем корзину
 events.on('success:close', () => {
 	modal.close();
-	basketModel.clear();
 });
 
 // Блокируем прокрутку страницы если открыта модалка

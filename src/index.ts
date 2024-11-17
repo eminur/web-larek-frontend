@@ -195,7 +195,7 @@ events.on('formOrderContact:submit', () => {
 		.catch((err) => console.log(err));
 });
 
-//Заказ отправлен на сервер, очищаем корзину
+//Заказ отправлен на сервер
 events.on('success:close', () => {
 	modal.close();
 });

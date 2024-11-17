@@ -182,14 +182,11 @@ events.on('formOrderContact:submit', () => {
 			if ('error' in data) {
 				alert(data.error);
 			} else {
-				basketModel.clear();
 				modal.render({
-					content: success.render({
-						totalPrice: catalogModel.getTotalPrice(
-							Array.from(basketModel.items.keys())
-						),
-					}),
+					content: success.render({ totalPrice: basketModel.totalPrice }),
 				});
+
+				basketModel.clear();
 			}
 		})
 		.catch((err) => console.log(err));
